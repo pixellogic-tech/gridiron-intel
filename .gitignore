@@ -1,0 +1,61 @@
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+*.env
+!.env.example
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+
+# Databases
+*.db
+*.sqlite
+dump.rdb
+postgres-data/
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+.eslintcache
+
+# Testing
+coverage/
+
+# IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large files
+uploads/
+videos/
+*.mp4
+*.mov
+*.zip
+*.tar.gz
+gridiron-intel-snapshot.zip
+server
+
+# Python
+__pycache__/
+venv/
+.venv/

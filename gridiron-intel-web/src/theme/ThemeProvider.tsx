@@ -1,0 +1,1 @@
+import React,{createContext,useContext}from'react';import{C,T,S,B}from'./tokens';const TC=createContext({C,T,S,B});export const useTheme=()=>useContext(TC);export const ThemeProvider=({children}:{children:React.ReactNode})=><TC.Provider value={{C,T,S,B}}>{children}</TC.Provider>;

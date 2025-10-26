@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  password          String
+  name              String
+  role              UserRole  @default(COACH)
+  isEmailVerified   Boolean   @default(false)
+  emailVerifyToken  String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  lastLogin         DateTime?
+  
+  teams             TeamMember[]
+  createdGames      Game[]
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([email])
+}
+
+model Team {
+  id                String    @id @default(cuid())
+  name              String
+  school            String
+  mascot            String?
+  division          String?
+  conference        String?
+  city              String?
+  state             String?
+  logoUrl           String?
+  primaryColor      String?
+  secondaryColor    String?
+  
+  subscriptionTier  SubscriptionTier @default(FREE)
+  subscriptionEnds  DateTime?
+  
+  members           TeamMember[]
+  players           Player[]
+  games             Game[]
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([school])
+}
+
+model TeamMember {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  teamId            String
+  team              Team      @relation(fields: [teamId], references: [id])
+  role              TeamRole  @default(VIEWER)
+  
+  joinedAt          DateTime  @default(now())
+  
+  @@unique([userId, teamId])
+  @@index([userId])
+  @@index([teamId])
+}
+
+model Player {
+  id                String    @id @default(cuid())
+  teamId            String
+  team              Team      @relation(fields: [teamId], references: [id])
+  
+  firstName         String
+  lastName          String
+  jerseyNumber      Int
+  position          String
+  height            String?
+  weight            Int?
+  graduationYear    Int
+  
+  email             String?
+  phone             String?
+  parentEmail       String?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@unique([teamId, jerseyNumber])
+  @@index([teamId])
+}
+
+model Game {
+  id                String    @id @default(cuid())
+  teamId            String
+  team              Team      @relation(fields: [teamId], references: [id])
+  createdById       String
+  createdBy         User      @relation(fields: [createdById], references: [id])
+  
+  opponent          String
+  gameDate          DateTime
+  location          GameLocation @default(HOME)
+  
+  videoUrl          String?
+  videoSize         BigInt?
+  videoDuration     Int?
+  thumbnailUrl      String?
+  
+  processingStatus  ProcessingStatus @default(PENDING)
+  processingStartedAt DateTime?
+  processingCompletedAt DateTime?
+  processingTimeMs  Int?
+  processingError   String?
+  
+  finalScoreUs      Int?
+  finalScoreThem    Int?
+  totalPlays        Int?
+  
+  plays             Play[]
+  insights          Insight[]
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([teamId])
+  @@index([processingStatus])
+}
+
+model Play {
+  id                String    @id @default(cuid())
+  gameId            String
+  game              Game      @relation(fields: [gameId], references: [id])
+  
+  playNumber        Int
+  quarter           Int
+  gameTime          String?
+  down              Int?
+  distance          Int?
+  yardLine          Int?
+  
+  startTime         Float
+  endTime           Float
+  
+  playType          String?
+  formation         String?
+  personnel         String?
+  motion            String?
+  
+  result            String?
+  yardsGained       Int?
+  touchdown         Boolean   @default(false)
+  turnover          Boolean   @default(false)
+  penalty           Boolean   @default(false)
+  
+  aiAnalysis        Json?
+  confidence        Float?
+  
+  createdAt         DateTime  @default(now())
+  
+  @@index([gameId])
+  @@index([playType])
+  @@index([formation])
+}
+
+model Insight {
+  id                String    @id @default(cuid())
+  gameId            String
+  game              Game      @relation(fields: [gameId], references: [id])
+  
+  type              InsightType
+  category          InsightCategory
+  priority          Priority
+  
+  message           String
+  recommendation    String?
+  
+  confidence        Float
+  data              Json?
+  
+  viewed            Boolean   @default(false)
+  viewedAt          DateTime?
+  
+  createdAt         DateTime  @default(now())
+  
+  @@index([gameId])
+  @@index([priority])
+  @@index([type])
+}
+
+model FrameAnalysis {
+  id                String    @id @default(cuid())
+  gameId            String
+  
+  timestamp         Float
+  analysis          Json
+  confidence        Float
+  
+  createdAt         DateTime  @default(now())
+  
+  @@index([gameId])
+  @@index([timestamp])
+}
+
+enum UserRole {
+  ADMIN
+  COACH
+  PLAYER
+  PARENT
+  VIEWER
+}
+
+enum TeamRole {
+  OWNER
+  HEAD_COACH
+  ASSISTANT_COACH
+  ANALYST
+  PLAYER
+  VIEWER
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ELITE
+}
+
+enum GameLocation {
+  HOME
+  AWAY
+  NEUTRAL
+}
+
+enum ProcessingStatus {
+  PENDING
+  UPLOADING
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum InsightType {
+  TENDENCY
+  RECOMMENDATION
+  WARNING
+  SUCCESS
+  PATTERN
+}
+
+enum InsightCategory {
+  OFFENSE
+  DEFENSE
+  SPECIAL_TEAMS
+  GENERAL
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
