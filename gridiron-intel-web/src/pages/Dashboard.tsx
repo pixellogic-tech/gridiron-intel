@@ -1,1 +1,25 @@
-import{useNavigate}from'react-router-dom';import{useAuth}from'../contexts/AuthContext';import{Button}from'../components/ui/Button';export default function Dashboard(){const{user:u}=useAuth();const n=useNavigate();return<div style={{minHeight:'100vh',background:'linear-gradient(135deg,#0f172a,#1e3a8a)',textAlign:'center',color:'white',display:'flex',flexDirection:'column',justifyContent:'center'}}><h1 style={{fontSize:'3rem'}}>🏈 Gridiron Intel</h1><p style={{fontSize:'1.2rem',color:'#93c5fd'}}>AI-Powered Football Intelligence</p><Button v="primary" onClick={()=>n(u?'/coach/dashboard':'/login')}>{u?'Go to Dashboard':'Get Started'}</Button></div>}
+import { useQuery } from '@tanstack/react-query'
+import StatsOverview from '@/components/dashboard/StatsOverview'
+import RecentGames from '@/components/dashboard/RecentGames'
+import PlayTypeChart from '@/components/charts/PlayTypeChart'
+import { api } from '@/services/api'
+
+export default function Dashboard() {
+  const { data: stats } = useQuery({
+    queryKey: ['stats'],
+    queryFn: api.getTeamStats,
+  })
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+      
+      <StatsOverview stats={stats} />
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PlayTypeChart />
+        <RecentGames />
+      </div>
+    </div>
+  )
+}
